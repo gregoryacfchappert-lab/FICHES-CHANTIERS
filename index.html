@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fiches chantier — ACF Chappert</title>
+<style>
+:root{--bleu:#0e5a8a;--bleu2:#1479b8;--fond:#f2f5f8;--txt:#22303c;--gris:#7b8a97;--ok:#1e9e57;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--fond);color:var(--txt);padding-bottom:40px}
+.hdr{background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;padding:22px 16px}
+.hdr h1{font-size:1.3rem}
+.hdr p{font-size:.88rem;opacity:.9;margin-top:4px}
+.wrap{max-width:720px;margin:0 auto;padding:14px}
+.search{width:100%;padding:12px;border:1px solid #cdd8e0;border-radius:8px;font-size:1rem;margin-bottom:14px}
+.search:focus{outline:2px solid var(--bleu2)}
+a.fiche{display:block;background:#fff;border-radius:10px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);text-decoration:none;color:var(--txt)}
+a.fiche:active{transform:scale(.99)}
+a.fiche .nom{font-weight:700;font-size:1rem;color:var(--bleu)}
+a.fiche .meta{font-size:.83rem;color:var(--gris);margin-top:4px}
+a.fiche .dates{font-size:.83rem;margin-top:2px}
+.ref{display:inline-block;background:#e3ebf1;color:var(--bleu);padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:700;margin-left:6px}
+.empty{text-align:center;color:var(--gris);padding:40px 10px;font-style:italic}
+.admin{display:block;text-align:center;margin-top:24px;font-size:.82rem;color:var(--gris)}
+</style>
+</head>
+<body>
+<div class="hdr"><h1>🏗️ Fiches chantier</h1><p>ACF Chappert — cliquez sur un chantier pour ouvrir sa fiche.</p></div>
+<div class="wrap">
+  <input class="search" id="q" type="search" placeholder="🔍 Rechercher un chantier...">
+  <div id="list"><p class="empty">Chargement...</p></div>
+  <a class="admin" href="admin.html">⚙️ Créer / gérer les fiches (accès bureau)</a>
+</div>
+<script>
+"use strict";
+var FICHES = [];
+var esc = function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");};
+var fdate = function(s){if(!s)return "";var p=s.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:s;};
+function render(){
+  var q = document.getElementById("q").value.toLowerCase();
+  var el = document.getElementById("list");
+  var items = FICHES.filter(function(f){
+    return !q || (f.nom+" "+(f.client||"")+" "+(f.ref||"")).toLowerCase().indexOf(q)>=0;
+  });
+  if(!items.length){ el.innerHTML = '<p class="empty">'+(FICHES.length?"Aucun chantier ne correspond à la recherche.":"Aucune fiche publiée pour le moment.")+'</p>'; return; }
+  el.innerHTML = items.map(function(f){
+    var h = '<a class="fiche" href="'+esc(f.file)+'"><div class="nom">'+esc(f.nom)+(f.ref?'<span class="ref">'+esc(f.ref)+'</span>':'')+'</div>';
+    if(f.client) h += '<div class="meta">'+esc(f.client)+'</div>';
+    if(f.debut||f.fin) h += '<div class="dates">📅 '+fdate(f.debut)+(f.fin?" → "+fdate(f.fin):"")+'</div>';
+    return h+'</a>';
+  }).join("");
+}
+document.getElementById("q").addEventListener("input",render);
+fetch("fiches/index.json?nc="+Date.now())
+ .then(function(r){return r.ok?r.json():[];})
+ .then(function(j){FICHES=j||[];render();})
+ .catch(function(){FICHES=[];render();});
+</script>
+</body>
+</html>

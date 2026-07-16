@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Créer une fiche chantier — ACF Chappert</title>
+<style>
+:root{--bleu:#0e5a8a;--bleu2:#1479b8;--fond:#f2f5f8;--carte:#fff;--txt:#22303c;--gris:#7b8a97;--ok:#1e9e57;--rouge:#c0392b;--orange:#e67e22;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--fond);color:var(--txt);padding-bottom:80px}
+.top{background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;padding:18px 20px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.top h1{font-size:1.2rem;font-weight:600}
+.top p{font-size:.85rem;opacity:.85;margin-top:2px}
+.top a{color:#fff;font-size:.85rem}
+.wrap{max-width:860px;margin:0 auto;padding:16px}
+.card{background:var(--carte);border-radius:10px;padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card h2{font-size:1.02rem;color:var(--bleu);margin-bottom:12px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #e3ebf1;padding-bottom:8px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--gris);margin:10px 0 4px;text-transform:uppercase;letter-spacing:.03em}
+input[type=text],input[type=date],input[type=tel],input[type=password],textarea,select{width:100%;padding:10px;border:1px solid #cdd8e0;border-radius:6px;font-size:.95rem;font-family:inherit;background:#fff}
+textarea{min-height:70px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--bleu2);border-color:var(--bleu2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:110px}
+.row .mini{flex:0 0 70px;min-width:70px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;background:#e3ebf1;color:var(--bleu);text-decoration:none}
+.btn:hover{filter:brightness(.95)}
+.btn.p{background:var(--bleu);color:#fff}
+.btn.g{background:var(--ok);color:#fff}
+.btn.sup{background:none;color:var(--rouge);flex:0 0 auto;min-width:0;font-size:1.1rem;padding:8px}
+.btn.small{padding:6px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:wait}
+.epi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px}
+.epi-grid label{display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:400;text-transform:none;color:var(--txt);margin:0;padding:8px;background:#f6f9fb;border-radius:6px;cursor:pointer;letter-spacing:0}
+.epi-grid input{width:18px;height:18px}
+.doclist{margin-top:10px}
+.docitem{display:flex;gap:8px;align-items:center;padding:8px;background:#f6f9fb;border-radius:6px;margin-bottom:6px;flex-wrap:wrap}
+.docitem .dname{flex:2;min-width:140px}
+.docitem .dcat{flex:1;min-width:110px}
+.docitem .dsize{flex:0 0 auto;font-size:.78rem;color:var(--gris)}
+.footer-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #dde5ec;padding:10px 16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;z-index:60;box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.hint{font-size:.8rem;color:var(--gris);margin-top:6px}
+.notice{background:#fff8e6;border:1px solid #f0d48a;border-radius:8px;padding:12px;font-size:.85rem;margin-bottom:16px;display:none}
+.help{background:#e8f2fa;border:1px solid #b8d8ee;border-radius:8px;padding:14px;font-size:.88rem;line-height:1.6}
+.help b{color:var(--bleu)}
+.help ol{margin:6px 0 0 20px}
+.totsize{font-size:.8rem;color:var(--gris);margin-top:4px}
+.totsize.warn{color:var(--orange);font-weight:600}
+.cfgstate{font-size:.85rem;margin-top:8px;font-weight:600}
+.cfgstate.ok{color:var(--ok)}
+.cfgstate.ko{color:var(--rouge)}
+details.cfg summary{cursor:pointer;font-weight:700;color:var(--bleu);font-size:1.02rem}
+/* --- overlay publication --- */
+#pubOverlay{display:none;position:fixed;inset:0;background:rgba(15,40,60,.75);z-index:100;padding:20px;overflow:auto}
+#pubOverlay .box{max-width:520px;margin:8vh auto;background:#fff;border-radius:12px;padding:24px}
+#pubOverlay h3{color:var(--bleu);margin-bottom:14px}
+#pubSteps{font-size:.92rem;line-height:1.8;white-space:pre-wrap}
+#pubResult{display:none;margin-top:14px}
+#pubResult .lien{background:#f6f9fb;border:1px solid #cdd8e0;border-radius:8px;padding:10px;font-size:.88rem;word-break:break-all;margin-bottom:12px}
+#pubResult .acts{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>🏗️ Créer une fiche chantier</h1>
+    <p>Remplissez puis « Publier » : la fiche est mise en ligne immédiatement.</p>
+  </div>
+  <a href="index.html">← Liste des fiches</a>
+</div>
+
+<div class="wrap">
+
+<div class="card" id="cfgCard">
+  <details class="cfg" id="cfgDetails">
+    <summary>⚙️ Configuration GitHub (à faire une seule fois)</summary>
+    <div class="help" style="margin-top:12px">
+      <b>Pourquoi ?</b> C'est ce qui permet au bouton « Publier » de mettre la fiche en ligne tout seul (voir LISEZMOI.txt pour la mise en place complète du site).
+      <ol>
+        <li><b>Compte</b> : votre nom d'utilisateur GitHub (ex : <i>acfchappert</i>).</li>
+        <li><b>Dépôt</b> : le nom du dépôt où est le site (ex : <i>fiches-chantier</i>).</li>
+        <li><b>Jeton</b> : sur github.com → photo de profil → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>. Repository access : <b>Only select repositories</b> → votre dépôt. Permissions → <b>Contents : Read and write</b>. Copiez le jeton ci-dessous.</li>
+        <li>Cliquez « Tester la connexion ». Ces réglages restent enregistrés dans votre navigateur uniquement (jamais publiés sur le site).</li>
+      </ol>
+    </div>
+    <div class="grid2">
+      <div><label>Compte GitHub</label><input type="text" id="cfg_owner" placeholder="ex : acfchappert"></div>
+      <div><label>Nom du dépôt</label><input type="text" id="cfg_repo" placeholder="ex : fiches-chantier"></div>
+      <div><label>Jeton d'accès (token)</label><input type="password" id="cfg_token" placeholder="github_pat_..."></div>
+    </div>
+    <div style="margin-top:12px"><button class="btn p" onclick="testConnexion()">🔌 Tester la connexion</button></div>
+    <div class="cfgstate" id="cfgState"></div>
+  </details>
+</div>
+
+<div class="notice" id="restoreNotice">📝 Un brouillon précédent a été restauré automatiquement. <button class="btn small" onclick="clearAll()">Repartir de zéro</button></div>
+
+<div class="card">
+  <h2>📋 Informations générales</h2>
+  <div class="grid2">
+    <div><label>Nom du chantier *</label><input type="text" id="f_nom" placeholder="Ex : Rénovation chaufferie — Résidence Les Tilleuls"></div>
+    <div><label>Référence interne</label><input type="text" id="f_ref" placeholder="Ex : CH-2026-042"></div>
+    <div><label>Client</label><input type="text" id="f_client" placeholder="Nom du client"></div>
+    <div><label>Adresse du chantier</label><input type="text" id="f_adresse" placeholder="N°, rue, code postal, ville"></div>
+    <div><label>Date de début</label><input type="date" id="f_debut"></div>
+    <div><label>Date de fin prévue</label><input type="date" id="f_fin"></div>
+    <div><label>Horaires de travail</label><input type="text" id="f_horaires" placeholder="Ex : 8h00 – 17h00, pause 12h-13h"></div>
+    <div><label>Techniciens affectés</label><input type="text" id="f_techs" placeholder="Ex : M. Durand, K. Benali"></div>
+  </div>
+  <label>Description des travaux</label>
+  <textarea id="f_description" placeholder="Nature de l'intervention : remplacement chaudière, création réseau ECS, VMC..."></textarea>
+</div>
+
+<div class="card">
+  <h2>🔑 Accès au site</h2>
+  <div class="grid2">
+    <div><label>Codes / badges / interphone</label><input type="text" id="f_codes" placeholder="Ex : portail 4512A, badge au gardien"></div>
+    <div><label>Clés — où les récupérer</label><input type="text" id="f_cles" placeholder="Ex : boîte à clés code 1234, loge gardien"></div>
+    <div><label>Stationnement</label><input type="text" id="f_parking" placeholder="Ex : parking visiteurs à l'arrière, badge nécessaire"></div>
+    <div><label>Local technique / chaufferie</label><input type="text" id="f_local" placeholder="Ex : sous-sol bât. B, porte grise"></div>
+  </div>
+  <label>Remarques d'accès</label>
+  <textarea id="f_accesnotes" placeholder="Ex : prévenir le gardien à l'arrivée, ascenseur interdit au matériel..."></textarea>
+</div>
+
+<div class="card">
+  <h2>📞 Contacts (client, MOA, MOE, autres corps d'état...)</h2>
+  <div id="contacts"></div>
+  <button class="btn" onclick="addContact()">＋ Ajouter un contact</button>
+  <p class="hint">Le premier contact avec téléphone sera proposé en appel rapide sur la fiche.</p>
+</div>
+
+<div class="card">
+  <h2>🔧 Travaux à réaliser</h2>
+  <div id="taches"></div>
+  <button class="btn" onclick="addTache()">＋ Ajouter une tâche</button>
+  <p class="hint">Les techniciens pourront cocher les tâches au fur et à mesure sur leur téléphone.</p>
+</div>
+
+<div class="card">
+  <h2>🧰 Matériel &amp; outillage à emporter</h2>
+  <div id="materiel"></div>
+  <button class="btn" onclick="addMat()">＋ Ajouter un élément</button>
+  <button class="btn small" onclick="addMatPreset()">⚡ Ajouter la liste type CVC</button>
+  <p class="hint">Checklist anti-oubli : à cocher au chargement du véhicule.</p>
+</div>
+
+<div class="card">
+  <h2>⚠️ Sécurité</h2>
+  <label>EPI obligatoires</label>
+  <div class="epi-grid" id="epis"></div>
+  <label>Risques spécifiques du site</label>
+  <textarea id="f_risques" placeholder="Ex : travail en hauteur, amiante suspectée, gaz, espace confiné, coactivité..."></textarea>
+  <label>Consignes particulières</label>
+  <textarea id="f_consignes" placeholder="Ex : consignation gaz obligatoire avant intervention, permis feu à demander..."></textarea>
+  <label>Numéro d'urgence interne (responsable à prévenir)</label>
+  <input type="text" id="f_urgence" placeholder="Ex : Greg — 06 XX XX XX XX">
+</div>
+
+<div class="card">
+  <h2>📄 Documents (plans, fiches produits, schémas...)</h2>
+  <input type="file" id="f_files" multiple accept=".pdf,image/*">
+  <p class="hint">PDF et images. Les fichiers sont <b>intégrés directement dans la fiche</b> : consultables sur le chantier même sans réseau.</p>
+  <div class="doclist" id="docs"></div>
+  <div class="totsize" id="totsize"></div>
+</div>
+
+<div class="card">
+  <h2>📝 Notes libres</h2>
+  <textarea id="f_notes" placeholder="Toute autre information utile..."></textarea>
+</div>
+
+<div class="card help">
+  <b>Comment ça marche ?</b><br>
+  🌐 <b>Publier sur le site</b> : la fiche est mise en ligne (active en ~1 minute) et apparaît dans la liste. Un lien direct vous est donné, à envoyer par SMS — il s'ouvre dans le navigateur du technicien.<br>
+  ♻️ Republier une fiche avec le même nom la <b>met à jour</b> (même lien).<br>
+  💾 <b>Télécharger</b> : version fichier hors-ligne (secours, ou envoi par mail/WhatsApp).
+</div>
+
+</div>
+
+<div class="footer-bar">
+  <button class="btn" onclick="loadExample()">👁️ Exemple</button>
+  <button class="btn" onclick="saveDraft()">💾 Brouillon</button>
+  <button class="btn" onclick="document.getElementById('draftfile').click()">📂 Charger</button>
+  <input type="file" id="draftfile" accept=".json" style="display:none">
+  <button class="btn" onclick="generate()">⬇️ Télécharger la fiche</button>
+  <button class="btn g" id="pubBtn" onclick="publish()">🌐 Publier sur le site</button>
+</div>
+
+<!-- overlay publication -->
+<div id="pubOverlay">
+  <div class="box">
+    <h3>🌐 Publication de la fiche</h3>
+    <div id="pubSteps"></div>
+    <div id="pubResult">
+      <div class="lien" id="pubLien"></div>
+      <div class="acts">
+        <button class="btn p" onclick="copyLink()">📋 Copier le lien</button>
+        <a class="btn g" id="smsBtn" href="#">💬 Envoyer par SMS</a>
+        <a class="btn" id="openBtn" href="#" target="_blank" rel="noopener">👁️ Ouvrir</a>
+      </div>
+    </div>
+    <div style="margin-top:16px;text-align:right"><button class="btn" onclick="closePub()">Fermer</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================= état ================= */
+let DOCS = [];
+const EPI_LIST = ["Casque","Lunettes de protection","Gants","Chaussures de sécurité","Protection auditive","Masque FFP2/FFP3","Harnais antichute","Gilet haute visibilité"];
+const MAT_PRESET = ["Caisse à outils complète","Pompe d'épreuve","Pince à sertir + inserts","Cintreuse","Chalumeau + baguettes brasure","Détecteur de fuite gaz","Manomètres / multimètre","Consommables : raccords, joints, filasse, pâte","Escabeau / échelle","Aspirateur + bâches de protection","Rallonge électrique + baladeuse","EPI complets pour chaque technicien"];
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+/* ================= config GitHub ================= */
+let CFG = {owner:"", repo:"", token:"", url:""};
+try{ CFG = Object.assign(CFG, JSON.parse(localStorage.getItem("fcg_cfg")||"{}")); }catch(e){}
+function saveCfg(){ CFG.owner=$("cfg_owner").value.trim(); CFG.repo=$("cfg_repo").value.trim(); CFG.token=$("cfg_token").value.trim(); try{localStorage.setItem("fcg_cfg",JSON.stringify(CFG));}catch(e){} }
+
+async function api(path, opts){
+  opts = opts||{};
+  opts.headers = Object.assign({Authorization:"Bearer "+CFG.token, Accept:"application/vnd.github+json"}, opts.headers||{});
+  const r = await fetch("https://api.github.com"+path, opts);
+  if(!r.ok){ const t = await r.text(); throw new Error("GitHub ("+r.status+") : "+t.slice(0,180)); }
+  return r;
+}
+async function resolveUrl(){
+  try{
+    const p = await (await api("/repos/"+CFG.owner+"/"+CFG.repo+"/pages")).json();
+    if(p.html_url) return p.html_url.replace(/\/$/,"");
+  }catch(e){}
+  return "https://"+CFG.owner+".github.io/"+CFG.repo;
+}
+async function testConnexion(){
+  saveCfg();
+  const st = $("cfgState");
+  st.className = "cfgstate"; st.textContent = "Connexion en cours...";
+  try{
+    await api("/repos/"+CFG.owner+"/"+CFG.repo);
+    CFG.url = await resolveUrl();
+    try{localStorage.setItem("fcg_cfg",JSON.stringify(CFG));}catch(e){}
+    st.className = "cfgstate ok"; st.textContent = "✅ Connecté — site : "+CFG.url;
+  }catch(e){
+    st.className = "cfgstate ko"; st.textContent = "❌ Échec : "+e.message+" — vérifiez le compte, le dépôt et le jeton.";
+  }
+}
+
+/* ================= EPI ================= */
+EPI_LIST.forEach(e=>{
+  const l=document.createElement("label");
+  l.innerHTML='<input type="checkbox" class="epi" value="'+esc(e)+'"> '+esc(e);
+  $("epis").appendChild(l);
+});
+
+/* ================= lignes dynamiques ================= */
+function addContact(d){
+  d=d||{};
+  const div=document.createElement("div");div.className="row contact";
+  div.innerHTML=
+   '<select class="c_role">'+["Client","Maître d'ouvrage","Maître d'œuvre","Conducteur de travaux","Gardien / contact sur place","Autre corps d'état","Fournisseur","Autre"].map(r=>'<option'+(d.role===r?" selected":"")+'>'+r+'</option>').join("")+'</select>'+
+   '<input type="text" class="c_nom" placeholder="Nom" value="'+esc(d.nom)+'">'+
+   '<input type="text" class="c_soc" placeholder="Société" value="'+esc(d.societe)+'">'+
+   '<input type="tel" class="c_tel" placeholder="Téléphone" value="'+esc(d.tel)+'">'+
+   '<input type="text" class="c_note" placeholder="Note (ex : plombier lot 2)" value="'+esc(d.note)+'">'+
+   '<button class="btn sup" title="Supprimer" onclick="this.parentNode.remove();autosave()">✕</button>';
+  $("contacts").appendChild(div);
+}
+function addTache(d){
+  d=d||{};
+  const div=document.createElement("div");div.className="row tache";
+  div.innerHTML=
+   '<input type="text" class="t_titre" placeholder="Tâche (ex : Dépose chaudière existante)" value="'+esc(d.titre)+'">'+
+   '<input type="text" class="t_detail" placeholder="Détail / précision (optionnel)" value="'+esc(d.detail)+'">'+
+   '<button class="btn sup" title="Supprimer" onclick="this.parentNode.remove();autosave()">✕</button>';
+  $("taches").appendChild(div);
+}
+function addMat(d){
+  d=d||{};
+  const div=document.createElement("div");div.className="row mat";
+  div.innerHTML=
+   '<input type="text" class="m_item" placeholder="Matériel / outillage" value="'+esc(d.item)+'">'+
+   '<input type="text" class="m_qte mini" placeholder="Qté" value="'+esc(d.qte)+'">'+
+   '<button class="btn sup" title="Supprimer" onclick="this.parentNode.remove();autosave()">✕</button>';
+  $("materiel").appendChild(div);
+}
+function addMatPreset(){ MAT_PRESET.forEach(m=>addMat({item:m})); autosave(); }
+
+/* ================= documents ================= */
+$("f_files").addEventListener("change", async ev=>{
+  for(const f of ev.target.files){
+    const dataUrl = await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f);});
+    DOCS.push({name:f.name, cat:guessCat(f.name), mime:f.type||"application/octet-stream", data:dataUrl.split(",")[1], size:f.size});
+  }
+  ev.target.value="";
+  renderDocs(); autosave();
+});
+function guessCat(n){
+  n=n.toLowerCase();
+  if(n.includes("plan"))return "Plan";
+  if(n.includes("fiche")||n.includes("ft_")||n.includes("produit"))return "Fiche produit";
+  if(n.includes("schema")||n.includes("schéma"))return "Schéma";
+  if(n.includes("notice"))return "Notice";
+  return "Document";
+}
+function fmtSize(o){ return o>1048576 ? (o/1048576).toFixed(1)+" Mo" : Math.round(o/1024)+" Ko"; }
+function renderDocs(){
+  const cats=["Plan","Fiche produit","Schéma","Notice","Sécurité","Document"];
+  $("docs").innerHTML="";
+  DOCS.forEach((d,i)=>{
+    const div=document.createElement("div");div.className="docitem";
+    div.innerHTML=
+     '<input type="text" class="dname" value="'+esc(d.name)+'" onchange="DOCS['+i+'].name=this.value;autosave()">'+
+     '<select class="dcat" onchange="DOCS['+i+'].cat=this.value;autosave()">'+cats.map(c=>'<option'+(d.cat===c?" selected":"")+'>'+c+'</option>').join("")+'</select>'+
+     '<span class="dsize">'+fmtSize(d.size)+'</span>'+
+     '<button class="btn sup" onclick="DOCS.splice('+i+',1);renderDocs();autosave()">✕</button>';
+    $("docs").appendChild(div);
+  });
+  const tot=DOCS.reduce((s,d)=>s+d.size,0);
+  const el=$("totsize");
+  if(tot>0){ el.textContent="Poids total des documents : "+fmtSize(tot)+(tot>20971520?" ⚠️ fiche lourde : elle mettra du temps à s'ouvrir en 4G. Compressez les PDF si possible.":""); el.className="totsize"+(tot>20971520?" warn":""); }
+  else el.textContent="";
+}
+
+/* ================= collecte ================= */
+function collectData(){
+  const rows=(sel,fn)=>Array.from(document.querySelectorAll(sel)).map(fn).filter(x=>Object.values(x).some(v=>v&&String(v).trim()));
+  return {
+    nom:$("f_nom").value.trim(), ref:$("f_ref").value.trim(), client:$("f_client").value.trim(),
+    adresse:$("f_adresse").value.trim(), debut:$("f_debut").value, fin:$("f_fin").value,
+    horaires:$("f_horaires").value.trim(), techs:$("f_techs").value.trim(), description:$("f_description").value.trim(),
+    acces:{codes:$("f_codes").value.trim(), cles:$("f_cles").value.trim(), parking:$("f_parking").value.trim(), local:$("f_local").value.trim(), notes:$("f_accesnotes").value.trim()},
+    contacts:rows(".contact",r=>({role:r.querySelector(".c_role").value,nom:r.querySelector(".c_nom").value.trim(),societe:r.querySelector(".c_soc").value.trim(),tel:r.querySelector(".c_tel").value.trim(),note:r.querySelector(".c_note").value.trim()})),
+    taches:rows(".tache",r=>({titre:r.querySelector(".t_titre").value.trim(),detail:r.querySelector(".t_detail").value.trim()})),
+    materiel:rows(".mat",r=>({item:r.querySelector(".m_item").value.trim(),qte:r.querySelector(".m_qte").value.trim()})),
+    securite:{epi:Array.from(document.querySelectorAll(".epi:checked")).map(c=>c.value), risques:$("f_risques").value.trim(), consignes:$("f_consignes").value.trim(), urgence:$("f_urgence").value.trim()},
+    docs:DOCS,
+    notes:$("f_notes").value.trim(),
+    genere:new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})
+  };
+}
+function fillForm(d){
+  clearForm();
+  $("f_nom").value=d.nom||"";$("f_ref").value=d.ref||"";$("f_client").value=d.client||"";
+  $("f_adresse").value=d.adresse||"";$("f_debut").value=d.debut||"";$("f_fin").value=d.fin||"";
+  $("f_horaires").value=d.horaires||"";$("f_techs").value=d.techs||"";$("f_description").value=d.description||"";
+  const a=d.acces||{};$("f_codes").value=a.codes||"";$("f_cles").value=a.cles||"";$("f_parking").value=a.parking||"";$("f_local").value=a.local||"";$("f_accesnotes").value=a.notes||"";
+  (d.contacts||[]).forEach(addContact);
+  (d.taches||[]).forEach(addTache);
+  (d.materiel||[]).forEach(addMat);
+  const s=d.securite||{};
+  document.querySelectorAll(".epi").forEach(c=>{c.checked=(s.epi||[]).includes(c.value)});
+  $("f_risques").value=s.risques||"";$("f_consignes").value=s.consignes||"";$("f_urgence").value=s.urgence||"";
+  DOCS=(d.docs||[]);renderDocs();
+  $("f_notes").value=d.notes||"";
+}
+function clearForm(){
+  document.querySelectorAll(".wrap input[type=text],.wrap input[type=date],.wrap input[type=tel],.wrap textarea").forEach(i=>{if(i.id.indexOf("cfg_")!==0)i.value="";});
+  document.querySelectorAll(".epi").forEach(c=>c.checked=false);
+  $("contacts").innerHTML="";$("taches").innerHTML="";$("materiel").innerHTML="";
+  DOCS=[];renderDocs();
+}
+function clearAll(){ clearForm(); try{localStorage.removeItem("fcg_draft");}catch(e){} $("restoreNotice").style.display="none"; addContact();addTache();addMat(); }
+
+/* ================= brouillons ================= */
+function slug(s){return (s||"chantier").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50)||"chantier";}
+function download(name,content,mime){
+  const b=new Blob([content],{type:mime});const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),5000);
+}
+function saveDraft(){
+  const d=collectData();
+  download("brouillon-"+slug(d.nom)+".json",JSON.stringify(d),"application/json");
+}
+$("draftfile").addEventListener("change",ev=>{
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{fillForm(JSON.parse(r.result));autosave();}catch(e){alert("Fichier brouillon invalide.");}};
+  r.readAsText(f);ev.target.value="";
+});
+let autosaveTimer=null;
+function autosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer=setTimeout(()=>{try{localStorage.setItem("fcg_draft",JSON.stringify(collectData()));}catch(e){}},800);
+}
+document.addEventListener("input",autosave);
+
+/* ================= exemple ================= */
+function loadExample(){
+  fillForm({
+    nom:"Remplacement chaudière — Résidence Les Tilleuls",ref:"CH-2026-042",client:"Syndic Foncia Angers",
+    adresse:"12 rue des Tilleuls, 49000 Angers",debut:"2026-07-20",fin:"2026-07-24",
+    horaires:"8h00 – 17h00 (pause 12h-13h)",techs:"M. Durand, K. Benali",
+    description:"Dépose de la chaudière fioul existante et pose d'une chaudière gaz à condensation 65 kW. Reprise du réseau primaire, remplacement du vase d'expansion, mise en service et réglages.",
+    acces:{codes:"Portail : 4512A — Interphone : appuyer sur « Gardien »",cles:"Boîte à clés à droite du portail, code 1234",parking:"2 places visiteurs à l'arrière du bât. B",local:"Chaufferie en sous-sol du bât. B, porte grise à gauche de l'ascenseur",notes:"Prévenir le gardien (M. Lopez) à l'arrivée. Passage du matériel par la rampe de service uniquement."},
+    contacts:[
+      {role:"Gardien / contact sur place",nom:"M. Lopez",societe:"Résidence",tel:"06 12 34 56 78",note:"Présent 7h-12h"},
+      {role:"Maître d'œuvre",nom:"Mme Girard",societe:"BET Fluides Ouest",tel:"06 98 76 54 32",note:"À prévenir avant mise en service"},
+      {role:"Maître d'ouvrage",nom:"M. Petit",societe:"Foncia Angers",tel:"02 41 00 00 00",note:""},
+      {role:"Autre corps d'état",nom:"Éts Martin",societe:"Électricité",tel:"06 55 44 33 22",note:"Alimentation chaufferie — lot 3"}
+    ],
+    taches:[
+      {titre:"Consignation gaz et vidange du circuit",detail:"Vannes d'arrêt en gaine palière"},
+      {titre:"Dépose chaudière existante",detail:"Évacuation en déchetterie agréée"},
+      {titre:"Pose chaudière gaz condensation 65 kW",detail:"Voir notice fabricant jointe"},
+      {titre:"Remplacement vase d'expansion + soupape",detail:""},
+      {titre:"Remise en eau, purge, essais d'étanchéité",detail:"Pompe d'épreuve 6 bars"},
+      {titre:"Mise en service et réglages",detail:"Prévenir Mme Girard (MOE) avant"}
+    ],
+    materiel:[
+      {item:"Chaudière + accessoires livrés (vérifier colisage)",qte:"1"},
+      {item:"Pompe d'épreuve",qte:"1"},{item:"Pince à sertir + inserts cuivre 28/35",qte:"1"},
+      {item:"Chalumeau + baguettes brasure",qte:"1"},{item:"Vase d'expansion 50 L",qte:"1"},
+      {item:"Diable / chariot de manutention",qte:"1"},{item:"Bâches de protection couloir",qte:"4"}
+    ],
+    securite:{epi:["Casque","Gants","Chaussures de sécurité","Lunettes de protection"],
+      risques:"Manutention lourde (chaudière ~180 kg) : travail à deux obligatoire. Présence de gaz : détecteur obligatoire. Sous-sol : éclairage d'appoint nécessaire.",
+      consignes:"Consignation gaz avant toute intervention. Permis feu à remplir avant brasure. Ne pas bloquer l'accès pompiers.",
+      urgence:"Greg — 06 00 00 00 00"},
+    docs:[],notes:"Le client souhaite un point d'avancement par téléphone chaque fin de journée.",genere:""
+  });
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ================= génération locale ================= */
+function buildFiche(d){
+  const json=JSON.stringify(d).replace(/</g,"\\u003c");
+  return FICHE_TEMPLATE.replace('"__DATA__"',json);
+}
+function generate(){
+  const d=collectData();
+  if(!d.nom){alert("Indiquez au minimum le nom du chantier.");$("f_nom").focus();return;}
+  download("fiche-"+slug(d.nom)+".html",buildFiche(d),"text/html");
+}
+
+/* ================= publication GitHub Pages ================= */
+function b64enc(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = ""; const CH = 32768;
+  for(let i=0;i<bytes.length;i+=CH){ bin += String.fromCharCode.apply(null, bytes.subarray(i,i+CH)); }
+  return btoa(bin);
+}
+function b64dec(b64){
+  const bin = atob(String(b64).replace(/\s/g,""));
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+function pubLog(msg){ $("pubSteps").textContent += msg+"\n"; }
+function closePub(){ $("pubOverlay").style.display="none"; }
+function copyLink(){
+  const t=$("pubLien").textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(t).then(()=>alert("Lien copié !")); }
+  else { prompt("Copiez le lien :", t); }
+}
+async function ghGetSha(path){
+  try{
+    const r = await fetch("https://api.github.com/repos/"+CFG.owner+"/"+CFG.repo+"/contents/"+path,
+      {headers:{Authorization:"Bearer "+CFG.token, Accept:"application/vnd.github.object+json"}});
+    if(r.ok){ const j = await r.json(); return j.sha||null; }
+  }catch(e){}
+  return null;
+}
+async function ghPut(path, contentStr, message, sha){
+  const body = {message:message, content:b64enc(contentStr)};
+  if(sha) body.sha = sha;
+  await api("/repos/"+CFG.owner+"/"+CFG.repo+"/contents/"+path,
+    {method:"PUT", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+}
+async function readIndexRemote(){
+  try{
+    const r = await fetch("https://api.github.com/repos/"+CFG.owner+"/"+CFG.repo+"/contents/fiches/index.json",
+      {headers:{Authorization:"Bearer "+CFG.token, Accept:"application/vnd.github+json"}});
+    if(r.ok){ const j = await r.json(); return {list:JSON.parse(b64dec(j.content)), sha:j.sha}; }
+  }catch(e){}
+  return {list:[], sha:null};
+}
+async function publish(){
+  const d=collectData();
+  if(!d.nom){alert("Indiquez au minimum le nom du chantier.");$("f_nom").focus();return;}
+  if(!CFG.owner||!CFG.repo||!CFG.token){
+    alert("Configurez d'abord la connexion GitHub (bandeau ⚙️ en haut de page).");
+    $("cfgDetails").open=true; window.scrollTo({top:0,behavior:"smooth"}); return;
+  }
+  $("pubOverlay").style.display="block";
+  $("pubSteps").textContent=""; $("pubResult").style.display="none";
+  $("pubBtn").disabled=true;
+  try{
+    if(!CFG.url){ pubLog("Connexion au site..."); CFG.url = await resolveUrl(); try{localStorage.setItem("fcg_cfg",JSON.stringify(CFG));}catch(e){} }
+
+    pubLog("Préparation de la fiche...");
+    const ficheHtml = buildFiche(d);
+    const fpath = "fiches/fiche-"+slug(d.nom)+".html";
+
+    pubLog("Envoi de la fiche ("+fmtSize(ficheHtml.length)+")...");
+    const prevSha = await ghGetSha(fpath);
+    await ghPut(fpath, ficheHtml, (prevSha?"Mise à jour":"Publication")+" fiche : "+d.nom, prevSha);
+
+    pubLog("Mise à jour de la liste des chantiers...");
+    const idxRes = await readIndexRemote();
+    let idx = Array.isArray(idxRes.list) ? idxRes.list : [];
+    idx = idx.filter(e=>e.file!==fpath);
+    idx.unshift({file:fpath, nom:d.nom, client:d.client, ref:d.ref, debut:d.debut, fin:d.fin, publie:new Date().toISOString()});
+    await ghPut("fiches/index.json", JSON.stringify(idx), "Mise à jour index : "+d.nom, idxRes.sha);
+
+    pubLog("✅ Fiche envoyée !");
+    pubLog("⏳ GitHub Pages met le site à jour : le lien sera actif d'ici 1 minute environ.");
+
+    const url = CFG.url.replace(/\/$/,"")+"/"+fpath;
+    $("pubLien").textContent = url;
+    $("openBtn").href = url;
+    $("smsBtn").href = "sms:?&body="+encodeURIComponent("Fiche chantier « "+d.nom+" » : "+url);
+    $("pubResult").style.display="block";
+  }catch(e){
+    pubLog("❌ Erreur : "+e.message);
+    pubLog("Vérifiez la configuration GitHub (⚙️) et votre connexion internet, puis réessayez.");
+  }finally{
+    $("pubBtn").disabled=false;
+  }
+}
+
+/* ================= modèle de la fiche (fichier autonome) ================= */
+const FICHE_TEMPLATE = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fiche chantier</title>
+<meta name="robots" content="noindex">
+<style>
+:root{--bleu:#0e5a8a;--bleu2:#1479b8;--fond:#f2f5f8;--txt:#22303c;--gris:#7b8a97;--ok:#1e9e57;--rouge:#c0392b;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:var(--fond);color:var(--txt);padding-bottom:30px}
+.hdr{background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;padding:20px 16px 16px}
+.hdr h1{font-size:1.3rem;line-height:1.3}
+.hdr .sub{font-size:.9rem;opacity:.9;margin-top:6px}
+.hdr .ref{display:inline-block;background:rgba(255,255,255,.2);padding:2px 10px;border-radius:12px;font-size:.78rem;margin-top:8px}
+.actions{display:flex;gap:10px;padding:12px 16px;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08);position:sticky;top:0;z-index:20}
+.actions a{flex:1;text-align:center;padding:12px 8px;border-radius:8px;text-decoration:none;font-weight:700;font-size:.95rem;background:var(--bleu);color:#fff}
+.actions a.tel{background:var(--ok)}
+.wrap{max-width:720px;margin:0 auto;padding:12px}
+details{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.07);overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:15px 16px;font-weight:700;font-size:1rem;color:var(--bleu);display:flex;justify-content:space-between;align-items:center;-webkit-tap-highlight-color:transparent}
+summary::-webkit-details-marker{display:none}
+summary .chev{transition:transform .2s;color:var(--gris)}
+details[open] summary .chev{transform:rotate(90deg)}
+.body{padding:0 16px 16px}
+.kv{margin-bottom:10px}
+.kv .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--gris);font-weight:700}
+.kv .v{font-size:.95rem;margin-top:2px;white-space:pre-wrap}
+.contact{padding:10px;background:#f6f9fb;border-radius:8px;margin-bottom:8px}
+.contact .role{font-size:.72rem;text-transform:uppercase;color:var(--bleu2);font-weight:700}
+.contact .nom{font-weight:700;margin:2px 0}
+.contact .soc{font-size:.85rem;color:var(--gris)}
+.contact .note{font-size:.85rem;margin-top:2px}
+.contact a.tel{display:inline-block;margin-top:6px;padding:8px 14px;background:var(--ok);color:#fff;border-radius:6px;text-decoration:none;font-weight:700;font-size:.9rem}
+.check{display:flex;align-items:flex-start;gap:10px;padding:10px;background:#f6f9fb;border-radius:8px;margin-bottom:6px}
+.check input{width:22px;height:22px;margin-top:1px;flex:none;accent-color:var(--ok)}
+.check .lbl{font-size:.95rem}
+.check .det{font-size:.83rem;color:var(--gris);margin-top:2px}
+.check.done .lbl{text-decoration:line-through;color:var(--gris)}
+.prog{font-size:.78rem;color:var(--gris);font-weight:400;margin-left:8px}
+.epi{display:inline-block;background:#fdecd4;color:#9a5b00;border:1px solid #f0c98a;padding:5px 12px;border-radius:14px;font-size:.85rem;font-weight:600;margin:0 6px 6px 0}
+.alert{background:#fdeaea;border-left:4px solid var(--rouge);padding:10px 12px;border-radius:6px;margin-bottom:10px;white-space:pre-wrap;font-size:.92rem}
+.consigne{background:#fff8e6;border-left:4px solid #e6b400;padding:10px 12px;border-radius:6px;margin-bottom:10px;white-space:pre-wrap;font-size:.92rem}
+.urg{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.urg a{flex:1;min-width:90px;text-align:center;padding:10px 6px;background:var(--rouge);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:.9rem}
+.doc{display:flex;align-items:center;gap:10px;padding:10px;background:#f6f9fb;border-radius:8px;margin-bottom:6px}
+.doc .ic{font-size:1.4rem;flex:none}
+.doc .inf{flex:1;min-width:0}
+.doc .nm{font-weight:600;font-size:.92rem;word-break:break-word}
+.doc .meta{font-size:.75rem;color:var(--gris)}
+.doc button{flex:none;padding:9px 14px;background:var(--bleu);color:#fff;border:none;border-radius:6px;font-weight:700;font-size:.85rem;cursor:pointer}
+.cat{display:inline-block;background:#e3ebf1;color:var(--bleu);padding:1px 8px;border-radius:10px;font-size:.7rem;font-weight:700;margin-right:6px}
+.foot{text-align:center;font-size:.75rem;color:var(--gris);margin-top:16px}
+.empty{font-size:.88rem;color:var(--gris);font-style:italic}
+.retour{display:block;text-align:center;margin-top:10px;font-size:.85rem;color:var(--gris)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+var DATA = "__DATA__";
+var esc = function(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");};
+var telHref = function(t){return "tel:"+String(t).replace(/[^+0-9]/g,"");};
+var fdate = function(s){if(!s)return "";var p=s.split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:s;};
+var KEY = "fc_"+(DATA.ref||DATA.nom||"x").replace(/\\W/g,"").slice(0,40);
+var saved = {};
+try{ saved = JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){}
+function persist(){ try{ localStorage.setItem(KEY,JSON.stringify(saved)); }catch(e){} }
+
+document.title = "Fiche — "+(DATA.nom||"chantier");
+
+function kv(k,v){ return v ? '<div class="kv"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div></div>' : ""; }
+function section(id,titre,inner,open){
+  return '<details'+(open?' open':'')+'><summary>'+titre+'<span class="chev">›</span></summary><div class="body" id="'+id+'">'+inner+'</div></details>';
+}
+
+var h = "";
+
+/* ---- entête ---- */
+h += '<div class="hdr"><h1>'+esc(DATA.nom)+'</h1>';
+var sub = [];
+if(DATA.client) sub.push("Client : "+DATA.client);
+if(DATA.debut||DATA.fin) sub.push("Du "+fdate(DATA.debut)+(DATA.fin?" au "+fdate(DATA.fin):""));
+if(DATA.techs) sub.push("Équipe : "+DATA.techs);
+if(sub.length) h += '<div class="sub">'+esc(sub.join(" • "))+'</div>';
+if(DATA.ref) h += '<span class="ref">'+esc(DATA.ref)+'</span>';
+h += '</div>';
+
+/* ---- actions rapides ---- */
+var mainTel = null;
+for(var ci=0; ci<(DATA.contacts||[]).length; ci++){ if(DATA.contacts[ci].tel){ mainTel = DATA.contacts[ci]; break; } }
+h += '<div class="actions">';
+if(DATA.adresse) h += '<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(DATA.adresse)+'" target="_blank" rel="noopener">📍 Itinéraire GPS</a>';
+if(mainTel) h += '<a class="tel" href="'+telHref(mainTel.tel)+'">📞 '+esc(mainTel.nom||"Contact")+'</a>';
+h += '</div><div class="wrap">';
+
+/* ---- infos / accès ---- */
+var acc = DATA.acces||{};
+var infos = kv("Adresse",DATA.adresse)+kv("Horaires",DATA.horaires)+kv("Description des travaux",DATA.description)
+ + kv("Codes / badges",acc.codes)+kv("Clés",acc.cles)+kv("Stationnement",acc.parking)+kv("Local technique",acc.local)+kv("Remarques d'accès",acc.notes);
+h += section("s1","📋 Infos &amp; accès", infos||'<p class="empty">—</p>', true);
+
+/* ---- contacts ---- */
+var ch = "";
+(DATA.contacts||[]).forEach(function(c){
+  ch += '<div class="contact"><div class="role">'+esc(c.role)+'</div><div class="nom">'+esc(c.nom)+'</div>';
+  if(c.societe) ch += '<div class="soc">'+esc(c.societe)+'</div>';
+  if(c.note) ch += '<div class="note">'+esc(c.note)+'</div>';
+  if(c.tel) ch += '<a class="tel" href="'+telHref(c.tel)+'">📞 '+esc(c.tel)+'</a>';
+  ch += '</div>';
+});
+h += section("s2","📞 Contacts", ch||'<p class="empty">Aucun contact renseigné.</p>');
+
+/* ---- travaux ---- */
+function checklist(items, prefix, labelFn){
+  var out = "";
+  items.forEach(function(it,i){
+    var id = prefix+i, done = !!saved[id];
+    out += '<label class="check'+(done?' done':'')+'" id="w_'+id+'"><input type="checkbox" data-k="'+id+'"'+(done?' checked':'')+'><span><span class="lbl">'+labelFn(it)+'</span>'+(it.detail?'<div class="det">'+esc(it.detail)+'</div>':'')+'</span></label>';
+  });
+  return out;
+}
+var taches = DATA.taches||[];
+h += section("s3",'🔧 Travaux à réaliser<span class="prog" id="prog_t"></span>', taches.length?checklist(taches,"t",function(it){return esc(it.titre);}):'<p class="empty">—</p>', true);
+
+/* ---- matériel ---- */
+var mat = DATA.materiel||[];
+h += section("s4",'🧰 Matériel à emporter<span class="prog" id="prog_m"></span>', mat.length?checklist(mat,"m",function(it){return esc(it.item)+(it.qte?" <b>× "+esc(it.qte)+"</b>":"");}):'<p class="empty">—</p>');
+
+/* ---- sécurité ---- */
+var sec = DATA.securite||{}, sh = "";
+if((sec.epi||[]).length){ sh += '<div class="kv"><div class="k">EPI obligatoires</div><div style="margin-top:6px">'+sec.epi.map(function(e){return '<span class="epi">🦺 '+esc(e)+'</span>';}).join("")+'</div></div>'; }
+if(sec.risques) sh += '<div class="kv"><div class="k">Risques spécifiques</div></div><div class="alert">'+esc(sec.risques)+'</div>';
+if(sec.consignes) sh += '<div class="kv"><div class="k">Consignes</div></div><div class="consigne">'+esc(sec.consignes)+'</div>';
+sh += '<div class="kv"><div class="k">Urgences</div></div><div class="urg"><a href="tel:15">SAMU 15</a><a href="tel:18">Pompiers 18</a><a href="tel:112">112</a></div>';
+if(sec.urgence) sh += kv("Responsable à prévenir",sec.urgence);
+h += section("s5","⚠️ Sécurité", sh);
+
+/* ---- documents ---- */
+var dh = "";
+(DATA.docs||[]).forEach(function(d,i){
+  var isImg = (d.mime||"").indexOf("image/")===0;
+  dh += '<div class="doc"><span class="ic">'+(isImg?"🖼️":"📄")+'</span><div class="inf"><div class="nm">'+esc(d.name)+'</div><div class="meta"><span class="cat">'+esc(d.cat||"Document")+'</span>'+(d.size?Math.round(d.size/1024)+" Ko":"")+'</div></div><button onclick="openDoc('+i+')">Ouvrir</button></div>';
+});
+h += section("s6","📄 Documents ("+(DATA.docs||[]).length+")", dh||'<p class="empty">Aucun document joint.</p>');
+
+/* ---- notes ---- */
+if(DATA.notes) h += section("s7","📝 Notes", '<div class="kv"><div class="v">'+esc(DATA.notes)+'</div></div>');
+
+h += '<div class="foot">Fiche générée le '+esc(DATA.genere)+' — consultable hors-ligne une fois ouverte.</div>';
+h += '<a class="retour" href="../index.html">← Toutes les fiches</a></div>';
+document.getElementById("app").innerHTML = h;
+
+/* ---- interactivité checklists ---- */
+function updateProgress(){
+  var t = document.querySelectorAll('input[data-k^="t"]'), m = document.querySelectorAll('input[data-k^="m"]');
+  var ct = 0, cm = 0, i;
+  for(i=0;i<t.length;i++) if(t[i].checked) ct++;
+  for(i=0;i<m.length;i++) if(m[i].checked) cm++;
+  var pt = document.getElementById("prog_t"), pm = document.getElementById("prog_m");
+  if(pt && t.length) pt.textContent = ct+"/"+t.length;
+  if(pm && m.length) pm.textContent = cm+"/"+m.length+(cm===m.length?" ✅":"");
+}
+document.querySelectorAll("input[data-k]").forEach(function(cb){
+  cb.addEventListener("change",function(){
+    saved[cb.getAttribute("data-k")] = cb.checked;
+    document.getElementById("w_"+cb.getAttribute("data-k")).classList.toggle("done",cb.checked);
+    persist(); updateProgress();
+  });
+});
+updateProgress();
+
+/* ---- ouverture des documents ---- */
+function openDoc(i){
+  var d = DATA.docs[i];
+  var bin = atob(d.data), len = bin.length, bytes = new Uint8Array(len), j;
+  for(j=0;j<len;j++) bytes[j] = bin.charCodeAt(j);
+  var blob = new Blob([bytes],{type:d.mime});
+  var url = URL.createObjectURL(blob);
+  var w = window.open(url,"_blank");
+  if(!w){
+    var a = document.createElement("a");
+    a.href = url; a.download = d.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+}
+window.openDoc = openDoc;
+<\/script>
+</body>
+</html>`;
+
+/* ================= initialisation ================= */
+(function init(){
+  $("cfg_owner").value=CFG.owner||"";
+  $("cfg_repo").value=CFG.repo||"";
+  $("cfg_token").value=CFG.token||"";
+  if(CFG.owner&&CFG.repo&&CFG.token&&CFG.url){ $("cfgState").className="cfgstate ok"; $("cfgState").textContent="✅ Configuré : "+CFG.url; }
+  else { $("cfgDetails").open=true; }
+  let restored=false;
+  try{
+    const raw=localStorage.getItem("fcg_draft");
+    if(raw){const d=JSON.parse(raw);if(d&&(d.nom||d.contacts&&d.contacts.length||d.docs&&d.docs.length)){fillForm(d);restored=true;$("restoreNotice").style.display="block";}}
+  }catch(e){}
+  if(!restored){addContact();addTache();addMat();}
+})();
+</script>
+</body>
+</html>
